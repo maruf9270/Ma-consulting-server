@@ -14,18 +14,30 @@ app.use(express.json());
 const uri = `mongodb+srv://${process.env.DB_NAME}:${process.env.DB_PASSWORD}@cluster0.acms3da.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
-// Checking if it gets connected to database
-client.connect(err => {
- if(err){
-    console.log(err);
-    console.log('Thre is a internal error');
- }
- else{
-    console.log('connected to database');
- }
- 
-  client.close();
-});
+
+
+// Connecting to the databse and processing all the request
+client.connect(err=>{
+    const services = client.db('ma-consulting').collection('services');
+    if(err){
+        console.log(err);
+    }
+    
+    else
+    {
+        // Our database is connected succesfully
+        console.log('connected to database');
+        // Reauest processing starts from here
+        // Routes
+        app.get('/services',async(req,res)=>{
+            const querry = {}
+            const data = services.find(querry)
+            const servicesfound = await data.toArray()
+            res.status(200).send(servicesfound)
+        })
+        // Reauest processing ends from here
+    }
+})
 
 // Route for testing purpose
 app.get('/',(req,res)=>{res.send('Server is running')})
