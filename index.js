@@ -1,7 +1,9 @@
 require('dotenv').config()
+var jwt = require('jsonwebtoken');
 const express = require('express');
 const cors = require('cors');
 const { MongoClient, ServerApiVersion } = require('mongodb');
+const privetKey = process.env.PRIVET_KEY
 
 const app = express()
 // Declearing port
@@ -17,27 +19,101 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 
 
 // Connecting to the databse and processing all the request
-client.connect(err=>{
-    const services = client.db('ma-consulting').collection('services');
-    if(err){
-        console.log(err);
-    }
+// client.connect(err=>{
+//     const servicesdb = client.db('ma-consulting').collection('services');
+//     if(err){
+//         console.log(err);
+//         app.get("/services",(req,res)=>{
+//             res.send('got it from error'+ err)
+//          })
+        
+//     }
     
-    else
-    {
-        // Our database is connected succesfully
-        console.log('connected to database');
-        // Reauest processing starts from here
-        // Routes
-        app.get('/services',async(req,res)=>{
-            const querry = {}
-            const data = services.find(querry)
-            const servicesfound = await data.toArray()
-            res.status(200).send(servicesfound)
-        })
-        // Reauest processing ends from here
-    }
-})
+//     else
+//     {
+//         // Our database is connected succesfully
+//         console.log('connected to database');
+//         // Reauest processing starts from here
+//         // Routes
+       
+//         // Reauest processing ends from here
+//     }
+// })
+
+async function run (){
+    const servicesdb = client.db('ma-consulting').collection('services');
+    const userCollection = client.db('ma-consulting').collection('user')
+   try{
+    /*-------------------------------------------------
+            Request section starts from here
+      -------------------------------------------------
+    */
+
+    // Geeting request for services and sending the resources
+      app.get("/services",async(req,res)=>{
+        const limitation =parseInt(req.query.limit)
+        
+        const querry = {}
+        const data = servicesdb.find(querry).limit(limitation)
+        if(data){
+              const servicesfound = await data.toArray()
+              res.send(servicesfound)
+        }
+        else{
+            res.send('not found')
+        }
+      
+     })
+
+    //  Jwt token generate
+    app.post('/jwt' ,(req,res)=>{
+        const email = req.body.mail;
+        const token = jwt.sign(email,privetKey);
+        res.send({token})
+
+    })
+    // Handling google and github sign up
+    app.put('/signup',async(req,res)=>{
+      const email = req.body.mail
+      const querry = {mail:email};
+      console.log(querry);
+      const user = await userCollection.findOne(querry)
+      if(!user){
+        const result = await userCollection.insertOne(querry)
+        res.send(result);
+        console.log(querry);
+      }
+      else{
+        res.send(user)
+        console.log(user);
+      }
+    })
+
+    // Handling password and gmail signup
+    app.put('/signupmail',async(req,res)=>{
+      const mail = req.body.email;
+      const password = req.body.password;
+      const user = {
+        email:mail,
+        password:password
+      }
+      const result = await userCollection.insertOne(user)
+      console.log(mail,password);
+      res.send(result)
+    })
+    /*-------------------------------------------------
+            Request section ends here
+      -------------------------------------------------
+    */
+   }
+   finally{
+
+   }
+
+}
+
+run().catch(err=>console.log(err))
+
 
 // Route for testing purpose
 app.get('/',(req,res)=>{res.send('Server is running')})
