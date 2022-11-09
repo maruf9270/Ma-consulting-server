@@ -129,6 +129,50 @@ async function run (){
       console.log(found);
       res.send(found)
     })
+    // middleware for auth token varify
+    function check (req,res,next){
+      
+      const token = req.headers.token
+     
+      if(!token){
+        
+        return  res.status(400).send({message:"Unauthoraised access"})
+      }
+
+      jwt.verify(token,privetKey,function(err,decoded){
+        if(err){
+         
+         return  res.status(400).send({message:"Unauthoraised access"})
+        
+        }
+        
+        req.decoded = decoded
+        next()
+       
+      })
+
+     
+
+
+    }
+
+    // Geeting request for my review and sending it back to the user
+    app.get('/myreviews',check,async(req,res)=>{
+      const details = req.decoded
+      const detailsLowerCased = details.toLowerCase()
+      const mail = req.query.mail
+      const mailLowercased = mail.toLowerCase()
+      if(detailsLowerCased !== mailLowercased){
+        return res.status(400).send({message:"Unauthoraised access"})
+      }
+      else{
+        const querry = {email: mail}
+        const result = reviews.find(querry);
+        const data = await result.toArray();
+        res.send(data)
+      }
+      
+    })
     /*-------------------------------------------------
             Request section ends here
       -------------------------------------------------
