@@ -122,8 +122,12 @@ async function run (){
 
     // Loading up a specific review and sending it to the user ends
     app.get('/reviews', async(req,res)=>{
-      console.log(req.query);
-
+      const id = req.query.sid
+      const querry = {serviceid: id}
+      const result = reviews.find(querry)
+      const found = await result.toArray()
+      console.log(found);
+      res.send(found)
     })
     /*-------------------------------------------------
             Request section ends here
