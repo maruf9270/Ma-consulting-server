@@ -2,7 +2,7 @@ require('dotenv').config()
 var jwt = require('jsonwebtoken');
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const privetKey = process.env.PRIVET_KEY
 
 const app = express()
@@ -98,8 +98,17 @@ async function run (){
         password:password
       }
       const result = await userCollection.insertOne(user)
-      console.log(mail,password);
       res.send(result)
+    })
+
+    // Getting a perticuler service details for user
+    app.get('/service/details', async(req,res)=>{
+      console.log(req.query.id);
+      const id = req.query.id;
+      const querry = {_id: ObjectId(id)}
+      const result = await servicesdb.findOne(querry)
+      res.send(result);
+
     })
     /*-------------------------------------------------
             Request section ends here
