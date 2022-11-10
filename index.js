@@ -17,29 +17,6 @@ const uri = `mongodb+srv://${process.env.DB_NAME}:${process.env.DB_PASSWORD}@clu
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
 
-
-// Connecting to the databse and processing all the request
-// client.connect(err=>{
-//     const servicesdb = client.db('ma-consulting').collection('services');
-//     if(err){
-//         console.log(err);
-//         app.get("/services",(req,res)=>{
-//             res.send('got it from error'+ err)
-//          })
-        
-//     }
-    
-//     else
-//     {
-//         // Our database is connected succesfully
-//         console.log('connected to database');
-//         // Reauest processing starts from here
-//         // Routes
-       
-//         // Reauest processing ends from here
-//     }
-// })
-
 async function run (){
     const servicesdb = client.db('ma-consulting').collection('services');
     const userCollection = client.db('ma-consulting').collection('user');
@@ -55,7 +32,7 @@ async function run (){
         const limitation =parseInt(req.query.limit)
         
         const querry = {}
-        const data = servicesdb.find(querry).limit(limitation)
+        const data = servicesdb.find(querry).limit(limitation).sort({s_id:-1})
         if(data){
               const servicesfound = await data.toArray()
               res.send(servicesfound)
