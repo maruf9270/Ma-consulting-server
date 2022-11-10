@@ -94,9 +94,13 @@ async function run (){
     app.put('/signupmail',async(req,res)=>{
       const mail = req.body.email;
       const password = req.body.password;
+      const img = req.body.img;
+      const name = req.body.name
       const user = {
         email:mail,
-        password:password
+        password:password,
+        name: name,
+        img: img
       }
       const result = await userCollection.insertOne(user)
       res.send(result)
@@ -124,7 +128,7 @@ async function run (){
     app.get('/reviews', async(req,res)=>{
       const id = req.query.sid
       const querry = {serviceid: id}
-      const result = reviews.find(querry)
+      const result = reviews.find(querry).sort({time:-1})
       const found = await result.toArray()
       console.log(found);
       res.send(found)
@@ -167,7 +171,7 @@ async function run (){
       }
       else{
         const querry = {email: mail}
-        const result = reviews.find(querry);
+        const result = reviews.find(querry).sort({time:1});
         const data = await result.toArray();
         res.send(data)
       }
