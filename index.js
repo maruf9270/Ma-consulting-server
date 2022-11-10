@@ -173,6 +173,51 @@ async function run (){
       }
       
     })
+
+    // Handling delete request
+    app.delete('/delete', async(req,res)=>{
+      const id = req.query.id;
+      const querry = {_id: ObjectId(id)}
+      const result = await reviews.deleteOne(querry)
+      res.send(result)
+      console.log(id);
+    })
+
+
+    // For updating user review
+    app.put('/update', async(req,res)=>{
+      const id = req.query.id
+      const updated = req.body
+      
+      const filter = {_id: ObjectId(id)}
+      const options = { upsert: true };
+      const updateReview = {
+        $set: updated
+      }
+      const result = await reviews.updateOne(filter,updateReview,options)
+      res.send(result)
+    })
+
+    // Loading a sigle review 
+    app.get('/editreview',async(req,res)=>{
+      const id = req.query.id;
+      const querry = {_id: ObjectId(id)}
+      const result = await reviews.findOne(querry)
+      res.send(result)
+      console.log(id);
+    })
+    // Getting estimated document and sending it to the user
+    app.get('/total', async(req,res)=>{
+      const total = await servicesdb.estimatedDocumentCount()
+      res.send({total})
+    })
+
+    // api for inserting the services to the server
+    app.put('/addservice', async(req,res)=>{
+      const service = req.body
+      const result = await servicesdb.insertOne(service);
+      res.send(result)
+    })
     /*-------------------------------------------------
             Request section ends here
       -------------------------------------------------
